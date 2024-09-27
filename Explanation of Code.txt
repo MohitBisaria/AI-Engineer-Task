@@ -1,0 +1,96 @@
+1.Import Libraries:
+os: Provides access to operating system functionality.
+
+json: Allows you to work with JSON data.
+
+transformers: The core library for working with pre-trained language models.
+
+Flask: The web framework for building the API.
+
+request: A Flask object that provides access to the incoming HTTP request.
+
+jsonify: A Flask function to convert Python data into JSON format
+
+
+2.Environment Variable
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false": This line sets the TOKENIZERS_PARALLELISM environment variable to "false". This prevents parallel processing of tokenizers, which can be useful for debugging or when working with smaller memory setups.
+
+
+3.Flask App Initialization:
+
+app = Flask(__name__): Creates a Flask application instance
+
+
+4.Load Tokenizer and Model:
+
+tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn"): Loads the tokenizer associated with the BART-Large-CNN model from Hugging Face's model hub.
+
+model = AutoModelForSeq2SeqLM.from_pretrained("facebook/bart-large-cnn"): Loads the pre-trained BART-Large-CNN model for sequence-to-sequence tasks, including summarization.
+
+
+5.Create Summarization Pipeline:
+
+summarizer = pipeline("summarization", model=model, tokenizer=tokenizer): Sets up a summarization pipeline using the loaded BART model and tokenizer. This pipeline simplifies summarization by providing a convenient interface
+
+
+6.API Endpoint (/summarise):
+
+@app.route("/summarise", methods=["GET", "POST"]): Defines the endpoint for your summarization service. It's accessible at http://your-server-address/summarise. The methods argument specifies that the endpoint accepts both GET and POST requests.
+
+
+7.summarise Function:
+
+This function handles the logic of the API:
+
+Handling GET Requests:
+
+prompt = request.args.get("prompt"): Retrieves the text to summarize from the URL query parameter "prompt" (e.g., http://your-server-address/summarise?prompt=This is the text to summarize.).
+
+Summarization:
+
+summary = summarizer(prompt, max_length=100, min_length=30)[0]["summary_text"]: Calls the summarizer pipeline, passing the prompt, setting maximum length, and minimum length for the summary. This will provide a
+summary, and the code will extract the summary text from the first element of the result.
+
+Return Summary:
+
+return jsonify({"response": summary}): If the request has a "prompt", it sends back the summary in JSON format.
+
+Handling POST Requests:
+
+data = request.get_json(): Gets the request body (which is expected to be in JSON format).
+
+prompt = data.get("prompt"): Retrieves the "prompt" from the JSON data.
+
+Summarization and Return:
+
+The same summarization and return logic as in the GET request handler is used.
+
+Error Handling:
+
+return jsonify({"error": ...}), 400: Returns an error message in JSON format if the request is missing the "prompt" parameter or if the request method is not GET or POST
+
+
+
+8.Running the App:
+
+if __name__ == "__main__":: Ensures that the code below only runs when the script is executed directly, not when it's imported as a module.
+
+app.run(debug=True): Starts the Flask development server. The debug=True option enables debugging features, which are helpful during development
+
+
+
+How to Use the API:
+
+1.Start the Server: Run the Python script. It should print a message like "Running on http://127.0.0.1:5000/" in the terminal.
+
+2.Send a GET Request:
+
+Open a web browser or use a tool like curl to send a GET request to the endpoint: http://127.0.0.1:5000/summarise?prompt=This is the text to summarize. It should be concise and informative.
+
+The response will be a JSON object containing the summarized text.
+
+3.Send a POST Request:
+
+Use a tool like curl or Postman to send a POST request with a JSON body:
+
